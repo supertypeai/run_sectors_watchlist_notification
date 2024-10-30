@@ -15,4 +15,4 @@ jobs:
       - name: Trigger Watchlist Notification API
         run: curl --request GET \ 
             --url https://sectors-watchlist-notification.vercel.app/api/email \
-            --header 'Authorization: Bearer ${{ secrets.SECRET }}'
+            --header 'Authorization:Bearer ${{ secrets.SECRET }}'
