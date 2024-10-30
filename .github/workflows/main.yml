@@ -12,13 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check Bearer Token (Debug)
+      - name: Trigger Watchlist Notification API
         env:
-          BEARER_TOKEN: ${{ secrets.TES }}
-        run: echo "Bearer:$BEARER_TOKEN"
-      # - name: Trigger Watchlist Notification API
-      #   env:
-      #     BEARER_TOKEN: ${{ secrets.SECRET }}
-      #   run: |
-      #     curl -X GET "https://sectors-watchlist-notification.vercel.app/api/email" \
-      #       -H "Authorization: Bearer $BEARER_TOKEN"
+          BEARER_TOKEN: ${{ secrets.SECRET }}
+        run: |
+          curl -X GET "https://sectors-watchlist-notification.vercel.app/api/email" \
+            -H "Authorization: Bearer $BEARER_TOKEN"
