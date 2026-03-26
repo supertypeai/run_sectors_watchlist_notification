@@ -12,9 +12,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
       - name: Trigger Watchlist Notification API
         env:
           BEARER_TOKEN: ${{ secrets.SECRET }}
         run: |
+          mkdir -p logs
+          echo "===========================================" >> logs/workflow.log
+          echo "Run started at: $(date -u)" >> logs/workflow.log
           curl -X GET "https://sectors-watchlist-notification.vercel.app/api/email" \
-            -H "Authorization: Bearer $BEARER_TOKEN"
+            -H "Authorization: Bearer $BEARER_TOKEN" \
+            -w "\nHTTP Status: %{http_code}\n" \
+            >> logs/workflow.log 2>&1
+          echo "Run completed at: $(date -u)" >> logs/workflow.log
+          echo "" >> logs/workflow.log
+      
+      - name: Commit and push logs
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add logs/
+          git commit -m "Add workflow run log - $(date -u +"%Y-%m-%d %H:%M:%S UTC")" || echo "No changes to commit"
+          git push
