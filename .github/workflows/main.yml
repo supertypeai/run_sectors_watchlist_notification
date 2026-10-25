@@ -2,34 +2,33 @@ name: Run Watchlist Notification
 
 on:
   schedule:
-    - cron: '0 5 * * 1'  # Every Monday at 12 pm WIB (5 am UTC)
-    
+    # Mondays at 12:00 WIB (05:00 UTC). GitHub starts scheduled runs late under
+    # load, by about four hours in this repo's history, so the email arrives
+    # later than this says.
+    - cron: '0 5 * * 1'
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-      
+        uses: actions/checkout@v4
+
+      # Fails the job on any answer but a clean 200, so a broken run is red and not silently green
       - name: Trigger Watchlist Notification API
         env:
           BEARER_TOKEN: ${{ secrets.SECRET }}
-        run: |
-          mkdir -p logs
-          echo "===========================================" >> logs/workflow.log
-          echo "Run started at: $(date -u)" >> logs/workflow.log
-          curl -X GET "https://sectors-watchlist-notification.vercel.app/api/email" \
-            -H "Authorization: Bearer $BEARER_TOKEN" \
-            -w "\nHTTP Status: %{http_code}\n" \
-            >> logs/workflow.log 2>&1
-          echo "Run completed at: $(date -u)" >> logs/workflow.log
-          echo "" >> logs/workflow.log
-      
+        run: bash scripts/trigger.sh
+
+      # Also on failure: the log line is how a bad run gets noticed, and committing it keeps
+      # GitHub from switching the schedule off after 60 days without activity
       - name: Commit and push logs
+        if: always()
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
